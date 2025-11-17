@@ -1,0 +1,66 @@
+{
+  "name": "create-vite-lustre",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "Create new vitejs + lustre + gleam",
+  "type": "module",
+  "module": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "bunup --watch",
+    "build": "bun run type-check && bunup",
+    "compile": "bunup",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "author": {
+    "name": "@gleam-br",
+    "email": "contato@gleam.dev.br"
+  },
+  "keywords": [
+    "bun",
+    "bunup",
+    "vite",
+    "gleam",
+    "javascript",
+    "create-gleam",
+    "create-bun-gleam",
+    "create-vite-gleam"
+  ],
+  "devDependencies": {
+    "@types/bun": "^1.3.2",
+    "bunup": "^0.15.14",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.5.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "execa": "^9.6.0",
+    "mri": "^1.2.0"
+  }
+}
