@@ -1,5 +1,3 @@
-import gleam/list
-
 import lustre
 import lustre/attribute as a
 import lustre/effect
