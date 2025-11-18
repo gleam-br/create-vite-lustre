@@ -2,6 +2,10 @@
 
 [Gleam](https://gleam.run/) project with [lustre](https://lustre.build/) library and [vitejs](https://vite.dev/) with/or not [experimental rolldown](https://rolldown.rs/) runtime.
 
+## Plugin
+
+- [vite-plugin-gleam](https://github.com/gleam-br/vite-plugin-gleam)
+
 ## Gleam
 
 ```sh
@@ -25,7 +29,7 @@ bun run build
 ## Serve
 
 ```ts
-
+// Serving ./dist/index.html on localhost:3000
 import {join} from "path"
 
 const path = join(".", "dist", "index.html")
