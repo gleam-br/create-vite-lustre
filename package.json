@@ -1,33 +1,33 @@
 {
   "name": "create-vite-lustre",
-  "description": "Create new vitejs + lustre + gleam",
-  "version": "0.1.5",
-  "bin": {
-    "create-vite-lustre": "./index.js"
-  },
-  "type": "module",
-  "files": [
-    "dist",
-    "template",
-    "LICENSE",
-    "README.md"
-  ],
-  "module": "./dist/index.js",
-  "main": "./dist/index.cjs",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./package.json": "./package.json"
-  },
+  "version": "0.1.6-alpha+001",
   "license": "Apache-2.0",
+  "description": "Create new vitejs + lustre + gleam",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "scripts": {
     "dev": "bunup --watch",
     "build": "bun run type-check && bunup",
     "compile": "bunup",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "npm run build"
+  },
+  "bin": {
+    "create-vite-lustre": "./index.js"
+  },
+  "files": [
+    "dist",
+    "template",
+    "LICENSE",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
   },
   "author": {
     "name": "@gleam-br",
@@ -43,6 +43,12 @@
     "create-bun-gleam",
     "create-vite-gleam"
   ],
+  "repository": {
+    "url": "git+https://github.com/gleam-br/create-vite-lustre.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gleam-br/create-vite-lustre/issues"
+  },
   "devDependencies": {
     "@types/bun": "^1.3.2",
     "bunup": "^0.15.14",
