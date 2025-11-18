@@ -34,3 +34,29 @@ Build `my-first-lustre`:
 bun install
 bun run build
 ```
+
+## Serve `my-first-lustre`:
+
+```ts
+// Serving ./dist/index.html on localhost:3000
+import {join} from "path"
+
+const path = join(".", "dist", "index.html")
+const file = Bun.file(path)
+const port = 3000
+const hostname = "0.0.0.0"
+
+Bun.serve({
+  port,
+  hostname,
+  fetch(req) {
+    return new Response(file)
+  },
+  error(err) {
+    console.error("Server error:", err);
+    return new Response("Internal Server Error", { status: 500 });
+  },
+})
+
+console.log(`Serving ${path} on 'http://${hostname}:${port}'!`);
+```

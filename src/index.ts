@@ -4,7 +4,6 @@
  *
  */
 
-
 import {
   resolve,
   dirname,
@@ -19,6 +18,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync
 } from "fs"
@@ -44,7 +44,7 @@ interface Options {
   template: string, // see vite-create templates
   rolldown: boolean, // experimental rolldown
   overwrite: boolean // overwrite if already exist files
-  typescript: boolean,  // template is *.ts
+  immediate: boolean,  // on finish run dev mode
   bin: {
     pm: string, // bun, npm, pnpm, yarn, etc
     gleam: string, // Where is gleam binary
@@ -67,7 +67,6 @@ const newArgv = {
     "overwrite",
     "immediate",
     "rolldown",
-    "typescript",
     "log-time",
   ],
   alias: {
@@ -90,7 +89,6 @@ const newArgv = {
     rolldown: false,
     immediate: false,
     overwrite: false,
-    typescript: false,
   }
 }
 
@@ -107,7 +105,7 @@ async function main(argv: any): Promise<void> {
     help,
     rolldown,
     overwrite,
-    typescript,
+    immediate,
     bin: { pm, gleam },
     dir: { cwd },
     log: { level, time }
@@ -115,7 +113,7 @@ async function main(argv: any): Promise<void> {
 
   // new log instance
   const log = logger(level, time)
-  log(`STARTUP v${version} OK !`)
+  log(`$ STARTUP v${version} OK !`)
 
   try {
     const args: string[] = [
@@ -131,11 +129,15 @@ async function main(argv: any): Promise<void> {
 
     args.push("--no-interactive")
     args.push("--template")
-    args.push(
-      typescript
-        ? `${template}-ts`
-        : template
-    )
+
+    if (template.endsWith("-ts")) {
+      log(`WARN | Only template javascript supported for now, sorry...`)
+      log(`WARN | Replacing template to javascript...`)
+
+      args.push(template.replace(/-ts$/, ""))
+    } else {
+      args.push(template)
+    }
 
     if (rolldown) {
       args.push("--rolldown")
@@ -186,13 +188,14 @@ async function main(argv: any): Promise<void> {
     ]
     await runBin(log, dest, gleam, gleamAddArgs)
 
-    await copyFiles(log, src, dest)
+    await copyFiles(log, gleamName, src, dest)
 
     // gleam build
     const gleamBuildArgs = [
       "build",
       "--target",
       "javascript",
+      "--no-print-progress"
     ]
     await runBin(log, dest, gleam, gleamBuildArgs)
 
@@ -209,7 +212,37 @@ async function main(argv: any): Promise<void> {
     ]
     await runBin(log, dest, pm, pmRunBuildArgs)
 
-    log("FINISH OK !")
+    const destSrc = resolve(dest, "src")
+    const toRemove = [
+      "counter.js",
+      "javascript.svg",
+      "style.css"
+    ]
+    // remove unused example files
+    toRemove
+      .map(f => join(destSrc, f))
+      .filter(existsSync)
+      .forEach(f => {
+        log(`:> remove file ${f}`)
+        try {
+          rmSync(f)
+        } catch (err) {
+          log(`:> remove error ${f}`)
+        }
+      })
+
+    if (immediate) {
+      log('Starting dev server...')
+
+      // move to target dir
+      const pmRunDevArgs = [
+        "run",
+        "dev"
+      ]
+      await runBin(log, dest, pm, pmRunDevArgs, true)
+    }
+
+    log("$ FINISH OK !")
     process.exit(0)
 
   } catch (err) {
@@ -221,8 +254,12 @@ async function main(argv: any): Promise<void> {
 
 /**
  * Copy template files to target dir
+ * - log Log instance
+ * - name Gleam project name
+ * - src Source template files
+ * - dest Target dir to scaffolding.
  */
-async function copyFiles(log: any, src: string, dest: string): Promise<void> {
+async function copyFiles(log: any, name: string, src: string, dest: string): Promise<void> {
   const stats = statSync(src)
 
   if (stats.isDirectory()) {
@@ -239,7 +276,7 @@ async function copyFiles(log: any, src: string, dest: string): Promise<void> {
 
     log(`|> copy recursive`)
     for (const file of readdirSync(src)) {
-      await copyFiles(log, resolve(src, file), resolve(dest, file))
+      await copyFiles(log, name, resolve(src, file), resolve(dest, file))
     }
 
     log(`|>> copy recursive OK !`)
@@ -255,6 +292,13 @@ async function copyFiles(log: any, src: string, dest: string): Promise<void> {
     return
   }
 
+  const copiedMain = copyMain(filename, name, src, dest)
+
+  if (copiedMain) {
+    log(`:> OK !`)
+    return
+  }
+
   const copiedVsCode = copyVsCodeFiles(filename, src, dest)
 
   if (copiedVsCode) {
@@ -262,7 +306,8 @@ async function copyFiles(log: any, src: string, dest: string): Promise<void> {
     return
   }
 
-  dest = replaceHidden(filename, src, dest)
+  dest = replaceApp(filename, name, dest)
+  dest = replaceHidden(filename, dest)
   const copiedGit = copyGitIgnore(filename, src, dest)
 
   if (copiedGit) {
@@ -275,9 +320,20 @@ async function copyFiles(log: any, src: string, dest: string): Promise<void> {
 }
 
 /**
+ * Replace app.gleam to 'gleam project name.gleam' file
+ */
+function replaceApp(filename: string, gleamName: string, dest: string): string {
+  if (filename === 'app.gleam') {
+    // rename `app.gleam` to `${gleamName}.gleam`
+    return resolve(dirname(dest), filename.replace('app', gleamName))
+  }
+
+  return dest
+}
+/**
  * Replace hidden files begin with '_' to '.'
  */
-function replaceHidden(filename: string, src: string, dest: string): string {
+function replaceHidden(filename: string, dest: string): string {
   if (filename.startsWith('_')) {
     // rename `_file` to `.file`
     return resolve(dirname(dest), filename.replace(/^_/, '.'))
@@ -287,14 +343,34 @@ function replaceHidden(filename: string, src: string, dest: string): string {
 }
 
 /**
+ * Replace and copy 'main.js' import to 'app.gleam' normalized to gleam name.
+ */
+function copyMain(
+  filename: string,
+  gleamName: string,
+  src: string,
+  dest: string,
+): boolean {
+  if (filename === 'main.js' && existsSync(dest)) {
+    const newMain = readFileSync(src, 'utf8')
+    console.log(">>>>> new Main", newMain)
+    const newMainReplaced = newMain
+      .replace(`import { main } from "./app.gleam"`,
+        `import { main } from "./${gleamName}.gleam"`)
+    console.log(">>>>> new replace ", newMainReplaced)
+
+    writeFileSync(dest, newMainReplaced)
+    return true
+  }
+
+  return false
+}
+/**
  * Copy package.json
  */
 async function copyPackageJson(filename: string, src: string, dest: string) {
   if (filename === 'package.json' && existsSync(dest)) {
-    // merge instead of overwriting
-    // const existing = await import(dest);
-    // const newPackage = await import(src);
-    // TODO: remove after test it
+    // merge
     const existing = JSON.parse(readFileSync(dest, 'utf8'))
     const newPackage = JSON.parse(readFileSync(src, 'utf8'))
     const pkg = sortDependencies(deepMerge(existing, newPackage))
@@ -355,13 +431,15 @@ async function runBin(
   log: any,
   cwd: string,
   bin: string,
-  args: string[]
+  args: string[],
+  noTimeout = false,
 ): Promise<void> {
   log(`$ ${bin} ${args.join(" ")}`)
-  const { stdout } = await run(cwd, bin, args)
+  const { stderr, exitCode } = await run(cwd, bin, args, noTimeout)
 
-  if (stdout) {
-    console.log(stdout)
+  if (stderr) {
+    console.error(stderr)
+    process.exit(exitCode)
   }
 
   log(`:> RUN OK !`)
@@ -399,21 +477,16 @@ function newOpt(options: any | undefined): Options {
   let template = typeof options.template === "string" && options.template !== ""
     ? options.template
     : "vanilla"
-  let typescript = typeof options.typescript === "boolean"
-    ? options.typescript
+  let immediate = typeof options.immediate === "boolean"
+    ? options.immediate
     : false
-
-  if (template.endsWith("-ts")) {
-    template = template.slice(0, template.length - 3)
-    typescript = true
-  }
 
   return {
     template,
     help,
     rolldown,
     overwrite,
-    typescript,
+    immediate,
     bin: {
       pm,
       gleam
@@ -453,8 +526,21 @@ function newOpt(options: any | undefined): Options {
  *   pipedFrom: [],
  * }>
  */
-async function run(cwd: string, bin: string, args: string[]): Promise<any> {
-  return await execa(bin, args, { cwd, encoding: "utf8", timeout: 5000 })
+async function run(
+  cwd: string,
+  bin: string,
+  args: string[],
+  noTimeout = false
+): Promise<any> {
+  const opts = noTimeout
+    ? {}
+    : { timeout: 5000 }
+  return await execa(bin, args, {
+    cwd,
+    encoding: "utf8",
+    stdio: "inherit",
+    ...opts
+  })
 }
 
 /**

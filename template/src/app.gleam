@@ -37,9 +37,9 @@ fn update(m: Model, msg: Msg) {
 fn view(m: Model) {
   let Model(counter:) = m
 
-  html.div([a.class("flex h-screen overflow-hidden bg-gray-100")], [
+  html.div([a.class("flex h-screen overflow-hidden bg-gray-800")], [
     html.div([], [
-      html.h1([a.class("text-green-800 text-5xl")], [html.text("ola mundo")]),
+      html.h1([a.class("text-green-300 text-5xl")], [html.text("ola mundo")]),
       html.button(
         [a.class("p-2 ml-2 mt-2 bg-gray-300"), event.on_click(OnIncrement)],
         [
