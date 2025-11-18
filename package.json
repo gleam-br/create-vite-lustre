@@ -1,36 +1,29 @@
 {
   "name": "create-vite-lustre",
-  "version": "0.1.0",
-  "license": "Apache-2.0",
   "description": "Create new vitejs + lustre + gleam",
+  "version": "0.1.0",
   "type": "module",
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "module": "./dist/index.js",
   "main": "./dist/index.cjs",
-  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "bunup --watch",
     "build": "bun run type-check && bunup",
     "compile": "bunup",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "npm run build"
-  },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
-    },
-    "./package.json": "./package.json"
   },
   "author": {
     "name": "@gleam-br",
