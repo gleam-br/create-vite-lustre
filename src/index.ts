@@ -33,8 +33,8 @@ import { name, version } from "../package.json"
 
 import { deepMerge, sortDependencies } from "./utils"
 
-/** Default timeout to exec commands */
-const DEFAULT_TIMEOUT = 60000
+/** Default timeout to exec 5 min */
+const DEFAULT_TIMEOUT = 300000
 
 /** Default dest template directory */
 const DEFAULT_TARGET_DIR = `${name}-project`
@@ -73,6 +73,7 @@ interface Options {
  * New argv parser to mri lib
  */
 const newArgv = {
+  alias: { h: "help" },
   boolean: [
     "help",
     "overwrite",
@@ -80,45 +81,43 @@ const newArgv = {
     "rolldown",
     "log-time",
   ],
-  alias: {
-    h: "help",
-    t: "template",
-    i: "immediate",
-    r: "rolldown",
-    f: "overwrite",
-  },
   string: [
     "template",
     "bin-pm",
     "bin-gleam",
+    "bin-timeout",
     "dir-cwd",
     "log-level",
   ],
 }
 
 // options from process.argv
-const OPTIONS = mri(process.argv.slice(2), newArgv)
+const ARGS = mri(process.argv.slice(2), newArgv)
+// normalize options
+const OPTS = newOpt(ARGS);
+// where put scaffold
+const TARGET = ARGS._[0]
 
 /**
  * Main function
  */
 async function main(): Promise<void> {
-  // normalize options
-  const opts = newOpt(OPTIONS);
   const {
     template,
     help,
     rolldown,
     overwrite,
     immediate,
-    bin: { pm, gleam },
+    bin: { pm, gleam, timeout },
     dir: { cwd },
     log: { level, time }
-  } = opts;
+  } = OPTS;
 
   // new log instance
   const log = logger(level, time)
   log(`$ STARTUP v${version} OK !`)
+  log(`|> log: ${level}`)
+  log(`|> timeout: ${timeout}`)
 
   try {
     const args: string[] = []
@@ -158,8 +157,8 @@ async function main(): Promise<void> {
       args.push("--overwrite")
     }
 
-    const targetDir = OPTIONS._[0]
-      ? normalizeTargetDir(String(OPTIONS._[0]))
+    const targetDir = TARGET
+      ? normalizeTargetDir(TARGET)
       : DEFAULT_TARGET_DIR
 
     log(`:> targetDir ${targetDir}`)
@@ -516,7 +515,7 @@ function newOpt(options: any | undefined): Options {
   const cwd = typeof options["dir-cwd"] === "string" && options["dir-cwd"] !== ""
     ? options["dir-cwd"]
     : process.cwd()
-  const timeout = typeof options["timeout"] === "number" && options["timeout"] > 1000
+  const timeout = typeof options["timeout"] === "number" && options["timeout"] >= 0
     ? options["timeout"]
     : DEFAULT_TIMEOUT
   // log
@@ -577,11 +576,11 @@ async function run(
   cwd: string,
   bin: string,
   args: string[],
-  noTimeout = false
+  noTimeout = false,
 ): Promise<any> {
-  const opts = noTimeout
-    ? {}
-    : { timeout: DEFAULT_TIMEOUT }
+  const { bin: { timeout } } = OPTS
+  const opts = !noTimeout && timeout > 0 ? { timeout } : { timeout: 0 }
+
   return await execa(bin, args, {
     cwd,
     encoding: "utf8",

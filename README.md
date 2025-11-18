@@ -64,6 +64,38 @@ Bun.serve({
 console.log(`Serving ${path} on 'http://${hostname}:${port}'!`);
 ```
 
+## Options
+
+Using [bun](https://bun.com/):
+
+```sh
+bun create vite-lustre --overwrite --immediate --rolldown --template react my-first-project
+```
+
+Using [npm](https://npmjs.com/) or [others](https://pnpm.io/):
+
+```sh
+npm create vite-lustre my-first-project -- --overwrite --immediate --rolldown --template react
+```
+
+### Vite create
+
+- `--help|-h`: Show help
+- `--rolldown`: New vite bundler (experimental)
+- `--immediate`: Run dev mode after finish
+- `--overwrite`: Overwrite all target dir files (danger)
+- `--template`: See [vite-create](https://github.com/vitejs/vite/tree/main/packages/create-vite#readme)
+  - 💔 Only 'vanilla' and 'react' for now.
+
+### Inner
+
+- `--bin-gleam`: (string) where is binary gleam (default 'gleam')
+- `--bin-pm`: (string) "bun", "npm", "pnpm", etc. (default userAgent or 'bun')
+- `--bin-timeout`: (number) exec commands timeout (default 60000)
+- `--log-level`: (string) "info" | "debug" | "trace" | "none" (default 'none')
+- `--log-time`: (bool) If has date and time log (default false)
+- `--dir-cwd`: (string) Path to root dir (default `process.cwd()`)
+
 ## Roadmap
 
 - [ ] Javascript templates
