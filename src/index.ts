@@ -74,7 +74,7 @@ const newArgv = {
     t: "template",
     i: "immediate",
     r: "rolldown",
-    f: "overwrite", //force
+    f: "overwrite",
   },
   string: [
     "template",
@@ -83,13 +83,6 @@ const newArgv = {
     "dir-cwd",
     "log-level",
   ],
-  defualt: {
-    template: "vanilla",
-    help: false,
-    rolldown: false,
-    immediate: false,
-    overwrite: false,
-  }
 }
 
 // options from process.argv
