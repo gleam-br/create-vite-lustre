@@ -92,14 +92,15 @@ const newArgv = {
   }
 }
 
+// options from process.argv
+const OPTIONS = mri(process.argv.slice(2), newArgv)
+
 /**
  * Main function
  */
-async function main(argv: any): Promise<void> {
-  // options from process.argv
-  const options = mri(argv, newArgv)
+async function main(): Promise<void> {
   // normalize options
-  const opts = newOpt(options);
+  const opts = newOpt(OPTIONS);
   const {
     template,
     help,
@@ -147,8 +148,8 @@ async function main(argv: any): Promise<void> {
       args.push("--overwrite")
     }
 
-    const targetDir = options._[0]
-      ? normalizeTargetDir(String(options._[0]))
+    const targetDir = OPTIONS._[0]
+      ? normalizeTargetDir(String(OPTIONS._[0]))
       : DEFAULT_TARGET_DIR
 
     log(`:> targetDir ${targetDir}`)
@@ -613,4 +614,4 @@ function isEmpty(path: string) {
 /**
  * MAIN
  */
-main(process.argv.slice(2))
+main()
