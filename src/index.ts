@@ -131,8 +131,8 @@ async function main(argv: any): Promise<void> {
     args.push("--template")
 
     if (template.endsWith("-ts")) {
-      log(`WARN | Only template javascript supported for now, sorry...`)
-      log(`WARN | Replacing template to javascript...`)
+      log(`$ WARN | Only template javascript supported for now, sorry...`)
+      log(`$ WARN | Replacing template to javascript...`)
 
       args.push(template.replace(/-ts$/, ""))
     } else {
@@ -353,11 +353,9 @@ function copyMain(
 ): boolean {
   if (filename === 'main.js' && existsSync(dest)) {
     const newMain = readFileSync(src, 'utf8')
-    console.log(">>>>> new Main", newMain)
     const newMainReplaced = newMain
       .replace(`import { main } from "./app.gleam"`,
         `import { main } from "./${gleamName}.gleam"`)
-    console.log(">>>>> new replace ", newMainReplaced)
 
     writeFileSync(dest, newMainReplaced)
     return true
