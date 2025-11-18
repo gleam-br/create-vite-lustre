@@ -33,9 +33,19 @@ import { name, version } from "../package.json"
 
 import { deepMerge, sortDependencies } from "./utils"
 
+/** Default timeout to exec commands */
+const DEFAULT_TIMEOUT = 60000
+
 /** Default dest template directory */
 const DEFAULT_TARGET_DIR = `${name}-project`
 
+const TEMPLATES = [
+  // only vanilla and
+  "vanilla",
+  // react templates for now
+  "react"
+  // TODO: more support vite-create templates
+]
 /**
  * Options to create vite lustre project.
  */
@@ -47,7 +57,8 @@ interface Options {
   immediate: boolean,  // on finish run dev mode
   bin: {
     pm: string, // bun, npm, pnpm, yarn, etc
-    gleam: string, // Where is gleam binary
+    gleam: string, // where is gleam binary
+    timeout: number // exec timeout in ms
   },
   dir: { // dirs
     cwd: string // process.cwd()
@@ -110,10 +121,7 @@ async function main(): Promise<void> {
   log(`$ STARTUP v${version} OK !`)
 
   try {
-    const args: string[] = [
-      "create",
-      "vite",
-    ]
+    const args: string[] = []
 
     if (help) {
       args.push("-h")
@@ -121,17 +129,26 @@ async function main(): Promise<void> {
       return;
     }
 
+    // support template
+    const isSupported = TEMPLATES.find(t => template.startsWith(t))
+
+    if (!isSupported) {
+      throw new Error(`Only support templates: '${TEMPLATES.join("' '")}'`)
+    }
+
+    // vite-create push args
     args.push("--no-interactive")
     args.push("--template")
+    let _template = template
 
     if (template.endsWith("-ts")) {
       log(`$ WARN | Only template javascript supported for now, sorry...`)
       log(`$ WARN | Replacing template to javascript...`)
 
-      args.push(template.replace(/-ts$/, ""))
-    } else {
-      args.push(template)
+      _template = template.replace(/-ts$/, "")
     }
+
+    args.push(_template)
 
     if (rolldown) {
       args.push("--rolldown")
@@ -152,15 +169,56 @@ async function main(): Promise<void> {
     }
 
     // run create-vite
-    args.push(targetDir)
-    await runBin(log, cwd, pm, args)
+    if (pm === "bun") {
+      // bun works with target dir last arg
+      args.push(targetDir)
+      await runBin(log, cwd, pm, ["create", "vite", ...args])
+    } else {
+      // npm, etc works with target dir first arg and rest args after '--'
+      await runBin(log, cwd, pm, ["create", "vite", targetDir, "--", ...args])
+    }
 
+    // src dir
     const src = resolve(fileURLToPath(import.meta.url), "../..", "template")
-    log(`:> srcDir ${src}`)
+    log(`:> src ${src}`)
 
+    // dest dir
     const dest = join(cwd, targetDir)
-    log(`:> destDir ${dest}`)
+    log(`:> dest ${dest}`)
 
+    // src template dir
+    const srcTemplate = resolve(fileURLToPath(import.meta.url), "../..", `template-${_template}`)
+    log(`:> template ${srcTemplate}`)
+
+    // dest src dir
+    const destSrc = resolve(dest, "src")
+    log(`|> dest src ${destSrc}`)
+
+    // remove unused example files
+    const toRemove = [
+      "../README.md",
+      "counter.js",
+      "javascript.svg",
+      "style.css"
+    ]
+    toRemove
+      .map(f => resolve(destSrc, f))
+      .filter(f => {
+        if (existsSync(f)) {
+          log(`:> remove file ${f}`)
+          return true
+        }
+        return false
+      }).forEach(f => {
+        try {
+          rmSync(f)
+          log(`:>> remove OK !`)
+        } catch (err) {
+          log(`:> remove error ${f}`)
+        }
+      })
+
+    // gleam name
     const gleamName = basename(resolve(targetDir)).replaceAll("-", "_")
 
     // gleam new
@@ -182,7 +240,13 @@ async function main(): Promise<void> {
     ]
     await runBin(log, dest, gleam, gleamAddArgs)
 
+    // copy files
     await copyFiles(log, gleamName, src, dest)
+
+    // if exist copy template-${_template} files
+    if (existsSync(srcTemplate)) {
+      await copyFiles(log, gleamName, srcTemplate, dest)
+    }
 
     // gleam build
     const gleamBuildArgs = [
@@ -206,25 +270,6 @@ async function main(): Promise<void> {
     ]
     await runBin(log, dest, pm, pmRunBuildArgs)
 
-    const destSrc = resolve(dest, "src")
-    const toRemove = [
-      "counter.js",
-      "javascript.svg",
-      "style.css"
-    ]
-    // remove unused example files
-    toRemove
-      .map(f => join(destSrc, f))
-      .filter(existsSync)
-      .forEach(f => {
-        log(`:> remove file ${f}`)
-        try {
-          rmSync(f)
-        } catch (err) {
-          log(`:> remove error ${f}`)
-        }
-      })
-
     if (immediate) {
       log('Starting dev server...')
 
@@ -240,7 +285,7 @@ async function main(): Promise<void> {
     process.exit(0)
 
   } catch (err) {
-    log(`Create vite lustre template error!`, true)
+    log(`Create project vite lustre error!`, true)
     console.error(err)
     process.exit(1)
   }
@@ -286,13 +331,6 @@ async function copyFiles(log: any, name: string, src: string, dest: string): Pro
     return
   }
 
-  const copiedMain = copyMain(filename, name, src, dest)
-
-  if (copiedMain) {
-    log(`:> OK !`)
-    return
-  }
-
   const copiedVsCode = copyVsCodeFiles(filename, src, dest)
 
   if (copiedVsCode) {
@@ -305,6 +343,13 @@ async function copyFiles(log: any, name: string, src: string, dest: string): Pro
   const copiedGit = copyGitIgnore(filename, src, dest)
 
   if (copiedGit) {
+    log(`:> OK !`)
+    return
+  }
+
+  const copiedMain = copyMain(filename, name, src, dest)
+
+  if (copiedMain) {
     log(`:> OK !`)
     return
   }
@@ -345,13 +390,17 @@ function copyMain(
   src: string,
   dest: string,
 ): boolean {
-  if (filename === 'main.js' && existsSync(dest)) {
-    const newMain = readFileSync(src, 'utf8')
-    const newMainReplaced = newMain
-      .replace(`import { main } from "./app.gleam"`,
-        `import { main } from "./${gleamName}.gleam"`)
 
-    writeFileSync(dest, newMainReplaced)
+  if (
+    // template vanilla
+    filename === 'main.js'
+    // template react and others
+    || filename === "main.jsx"
+  ) {
+    const srcMain = readFileSync(src, 'utf8')
+    const srcMainReplaced = srcMain.replace("./app.gleam", `./${gleamName}.gleam`)
+
+    writeFileSync(dest, srcMainReplaced)
     return true
   }
 
@@ -441,6 +490,10 @@ async function runBin(
  * New normalized options
  */
 function newOpt(options: any | undefined): Options {
+  // create-vite
+  let template = typeof options.template === "string" && options.template !== ""
+    ? options.template
+    : "vanilla"
   const help = typeof options.help === "boolean"
     ? options.help
     : false
@@ -450,6 +503,10 @@ function newOpt(options: any | undefined): Options {
   const overwrite = typeof options.overwrite === "boolean"
     ? options.overwrite
     : false
+  let immediate = typeof options.immediate === "boolean"
+    ? options.immediate
+    : false
+  // bin
   const pm = typeof options["bin-pm"] === 'string' && options["bin-pm"] !== ""
     ? options["bin-pm"]
     : getBinPmFromUserAgent()
@@ -459,18 +516,15 @@ function newOpt(options: any | undefined): Options {
   const cwd = typeof options["dir-cwd"] === "string" && options["dir-cwd"] !== ""
     ? options["dir-cwd"]
     : process.cwd()
+  const timeout = typeof options["timeout"] === "number" && options["timeout"] > 1000
+    ? options["timeout"]
+    : DEFAULT_TIMEOUT
+  // log
   const level = typeof options["log-level"] === "string" && options["log-level"] !== ""
     ? options["log-level"]
     : "none"
   const time = typeof options["log-time"] === "boolean"
     ? options["log-time"]
-    : false
-
-  let template = typeof options.template === "string" && options.template !== ""
-    ? options.template
-    : "vanilla"
-  let immediate = typeof options.immediate === "boolean"
-    ? options.immediate
     : false
 
   return {
@@ -481,7 +535,8 @@ function newOpt(options: any | undefined): Options {
     immediate,
     bin: {
       pm,
-      gleam
+      gleam,
+      timeout,
     },
     dir: {
       cwd,
@@ -526,7 +581,7 @@ async function run(
 ): Promise<any> {
   const opts = noTimeout
     ? {}
-    : { timeout: 10000 }
+    : { timeout: DEFAULT_TIMEOUT }
   return await execa(bin, args, {
     cwd,
     encoding: "utf8",

@@ -1,7 +1,7 @@
 {
   "name": "create-vite-lustre",
   "description": "Create new vitejs + lustre + gleam",
-  "version": "0.1.5-alpha+001",
+  "version": "0.1.5-alpha+003",
   "bin": {
     "create-vite-lustre": "./index.js"
   },

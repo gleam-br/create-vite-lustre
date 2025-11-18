@@ -4,6 +4,7 @@
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
+    "@types/node": "^24.10.1",
     "vite-plugin-gleam": "^0.1.6"
   }
 }

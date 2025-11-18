@@ -2,6 +2,9 @@
 
 Create project with [ViteJs](https://vite.dev/) + [Lustre](https://lustre.build/) and [Gleam](https://gleam.run) scaffold.
 
+🚧 **Work in progress** not production ready.
+> Only javascript templates
+
 ## Plugin
 
 - [vite-plugin-gleam](https://github.com/gleam-br/vite-plugin-gleam)
@@ -60,3 +63,14 @@ Bun.serve({
 
 console.log(`Serving ${path} on 'http://${hostname}:${port}'!`);
 ```
+
+## Roadmap
+
+- [ ] Javascript templates
+  - [x] vanilla
+  - [x] react
+  - [ ] ...others
+- [ ] Typescript templates
+  - [ ] ... all
+- [ ] VSCode not auto-comple import gleam files
+  [ ] ...Why?

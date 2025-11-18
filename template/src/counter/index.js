@@ -2,7 +2,7 @@
 import './style.css'
 
 import viteLogo from '/vite.svg'
-import gleamBrLogo from '../assets/logo.svg'
+import gleamBrLogo from '/logo.svg'
 
 import javascriptLogo from './javascript.svg'
 import lustreLogo from './lustre-logo.png'
