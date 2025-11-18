@@ -534,7 +534,7 @@ async function run(
 ): Promise<any> {
   const opts = noTimeout
     ? {}
-    : { timeout: 5000 }
+    : { timeout: 10000 }
   return await execa(bin, args, {
     cwd,
     encoding: "utf8",

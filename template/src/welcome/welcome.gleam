@@ -54,6 +54,7 @@ fn view(_m: Model) {
         html.style([a.attribute("scoped", "true")], welcome_styles),
       ]),
       html.main([], [
+        html.style([a.attribute("scoped", "true")], welcome_item_styles),
         // the welcome
         welcome_item(svg_tool(), "This project is served and bundled with", [
           html.a(
@@ -118,10 +119,6 @@ fn view(_m: Model) {
 }
 
 fn welcome_item(svg, title, inner) {
-  let inner =
-    list.append(inner, [
-      html.style([a.attribute("scoped", "true")], welcome_item_styles),
-    ])
   html.div([a.class("item")], [
     html.i([], [svg]),
     html.h3([], [html.text(title)]),
