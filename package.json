@@ -1,6 +1,6 @@
 {
   "name": "create-vite-lustre",
-  "version": "0.1.6",
+  "version": "0.1.7-alpha+001",
   "license": "Apache-2.0",
   "description": "Create new vitejs + lustre + gleam",
   "type": "module",
@@ -11,7 +11,7 @@
     "build": "bun run type-check && bunup",
     "compile": "bunup",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "bun run build"
   },
   "bin": {
     "create-vite-lustre": "./index.js"
