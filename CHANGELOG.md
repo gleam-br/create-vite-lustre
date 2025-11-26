@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2025-11-26
+
+### Added
+- Add new v0.1.6 by @salespaulo
+- Add css @source ref to gleam build target javascript directory, issue automatic detection tailwind using gleam packages using tailwind not scan by @salespaulo
+- Add readme icons by @salespaulo
+- Add package.json repository and bug section by @salespaulo
+
+### Changed
+- Up alpha+002 by @salespaulo
+- Update changelog by @github-actions[bot]
+
+### Removed
+- Remove unused import and remove unused file by @salespaulo
+
 ## [0.1.5] - 2025-11-18
 
 ### Added
@@ -74,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## New Contributors
 * @salespaulo made their first contribution
+[0.1.6]: https://github.com/gleam-br/create-vite-lustre/compare/v0.1.5..v0.1.6
 [0.1.5]: https://github.com/gleam-br/create-vite-lustre/compare/v0.1.4..v0.1.5
 [0.1.4]: https://github.com/gleam-br/create-vite-lustre/compare/v0.1.3..v0.1.4
 [0.1.3]: https://github.com/gleam-br/create-vite-lustre/compare/v0.1.2..v0.1.3
