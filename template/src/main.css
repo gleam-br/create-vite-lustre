@@ -1,4 +1,4 @@
 @import "tailwindcss";
 
 /* https://tailwindcss.com/blog/tailwindcss-v4#automatic-content-detection */
-@source "./build/dev/javascript";
+@source "../build/dev/javascript";
