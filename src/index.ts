@@ -39,6 +39,7 @@ const DEFAULT_TIMEOUT = 300000
 /** Default dest template directory */
 const DEFAULT_TARGET_DIR = `${name}-project`
 
+/** See create-vite templates */
 const TEMPLATES = [
   // only vanilla and
   "vanilla",
@@ -46,6 +47,7 @@ const TEMPLATES = [
   "react"
   // TODO: more support vite-create templates
 ]
+
 /**
  * Options to create vite lustre project.
  */
@@ -95,7 +97,7 @@ const newArgv = {
 const ARGS = mri(process.argv.slice(2), newArgv)
 // normalize options
 const OPTS = newOpt(ARGS);
-// where put scaffold
+// target dir where put scaffold dir/files
 const TARGET = ARGS._[0]
 
 /**
@@ -272,6 +274,7 @@ async function main(): Promise<void> {
     if (immediate) {
       log('Starting dev server...')
 
+      // pm run dev spawn child process detached
       const pmRunDevArgs = [
         "run",
         "dev"
@@ -367,6 +370,7 @@ function replaceApp(filename: string, gleamName: string, dest: string): string {
 
   return dest
 }
+
 /**
  * Replace hidden files begin with '_' to '.'
  */
@@ -404,6 +408,7 @@ function copyMain(
 
   return false
 }
+
 /**
  * Copy package.json
  */
