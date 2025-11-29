@@ -272,7 +272,6 @@ async function main(): Promise<void> {
     if (immediate) {
       log('Starting dev server...')
 
-      // move to target dir
       const pmRunDevArgs = [
         "run",
         "dev"
