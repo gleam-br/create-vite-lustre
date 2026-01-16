@@ -2,7 +2,7 @@
 
 Create project with [ViteJs](https://vite.dev/) + [Lustre](https://lustre.build/) and [Gleam](https://gleam.run) scaffold.
 
-🚧 **Work in progress** not production ready.
+🚧 [Code Wiki](https://codewiki.google/github.com/gleam-br/create-vite-lustre).
 > Only javascript templates
 
 ## 🌸 Options
