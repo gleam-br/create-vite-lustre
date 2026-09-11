@@ -13,7 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      - uses: erlef/setup-beam@v1
         with:
-          version: 'latest'
+          gleam-version: 'latest'
       - run: bun install
-      - run: bun run build 
+      - run: bun run test
+      - run: bun run build

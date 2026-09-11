@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* Scan Gleam compiled JavaScript output for Tailwind v4 utility classes */
+@source "../build/dev/javascript";

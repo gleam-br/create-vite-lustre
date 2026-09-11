@@ -1,2 +1,6 @@
 {
+  "recommendations": [
+    "gleam.gleam",
+    "bradlc.vscode-tailwindcss"
+  ]
 }

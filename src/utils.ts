@@ -55,3 +55,32 @@ export function sortDependencies(packageJson: any): any {
     ...sorted,
   }
 }
+
+/**
+ * Sanitize a string into a valid Gleam package name.
+ * Requirements in Gleam:
+ * - Only lowercase ASCII letters, digits, and underscores ([a-z0-9_])
+ * - Must start with a lowercase letter ([a-z])
+ * - Cannot be empty
+ *
+ * @param rawName Raw input name (e.g. from folder name)
+ * @returns Valid Gleam package name
+ */
+export function sanitizeGleamName(rawName: string): string {
+  let name = (rawName || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+
+  if (!name || !/^[a-z]/.test(name)) {
+    name = `app_${name}`.replace(/_+$/g, "")
+  }
+
+  if (name === "app_" || !name) {
+    name = "app"
+  }
+
+  return name
+}

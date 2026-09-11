@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-09-11
+
+### Added
+- Add complete Vitest test suite with unit tests, template integrity tests, and E2E scaffolding tests
+- Add `template-react` to `files` array in `package.json` for npm package distribution
+- Add `sanitizeGleamName` utility to ensure valid Gleam package naming (`^[a-z][a-z0-9_]*$`)
+- Add modern Tailwind v4 UI with full counter controls (Increment, Decrement, Reset) in `app.gleam`
+- Add dedicated `template-react` configuration with `@vitejs/plugin-react` v6, `@gleam` alias, and dual React + Lustre architecture
+- Add VS Code extension recommendations (`gleam.gleam`, `bradlc.vscode-tailwindcss`)
+
+### Changed
+- Upgrade `vite-plugin-gleam` to `v0.1.9` across all templates
+- Upgrade `@vitejs/plugin-react` to `^6.1.1` in React template for full Vite 8 / Rolldown / Oxc compatibility
+- Update ESM path resolution in Vite configs using `fileURLToPath`
+- Add `build.rolldownOptions.checks.invalidAnnotation: false` in Vite configs to silence upstream Lustre FFI annotation diagnostics
+- Clean up unused experimental files (`counter/` and `welcome/` directories) from template
+- Clean up orphaned `main.js` automatically when scaffolding React projects
+- Update GitHub Actions CI workflow to run full test suite with Gleam setup
+
 ## [0.1.8] - 2026-01-16
 
 ### Added

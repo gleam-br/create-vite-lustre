@@ -31,7 +31,7 @@ import { execa } from "execa"
 
 import { name, version } from "../package.json"
 
-import { deepMerge, sortDependencies } from "./utils"
+import { deepMerge, sortDependencies, sanitizeGleamName } from "./utils"
 
 /** Default timeout to exec 5 min */
 const DEFAULT_TIMEOUT = 300000
@@ -220,7 +220,8 @@ async function main(): Promise<void> {
       })
 
     // gleam name
-    const gleamName = basename(resolve(targetDir)).replaceAll("-", "_")
+    const gleamName = sanitizeGleamName(basename(resolve(targetDir)))
+    log(`:> gleam package name: ${gleamName}`)
 
     // gleam new
     const gleamNewArgs = [
@@ -247,6 +248,19 @@ async function main(): Promise<void> {
     // if exist copy template-${_template} files
     if (existsSync(srcTemplate)) {
       await copyFiles(log, gleamName, srcTemplate, dest)
+    }
+
+    // Clean up template-specific conflicting files
+    if (_template === "react") {
+      const vanillaMain = resolve(destSrc, "main.js")
+      if (existsSync(vanillaMain)) {
+        try {
+          rmSync(vanillaMain)
+          log(`:> cleaned up unused main.js for react template`)
+        } catch {
+          // ignore
+        }
+      }
     }
 
     // gleam build
@@ -283,6 +297,12 @@ async function main(): Promise<void> {
     }
 
     log("$ FINISH OK !")
+    console.log(`\n🎉 Project successfully scaffolded with Vite + Lustre + Gleam!`)
+    console.log(`\nNext steps:`)
+    if (targetDir !== ".") {
+      console.log(`  cd ${targetDir}`)
+    }
+    console.log(`  ${pm} run dev\n`)
     process.exit(0)
 
   } catch (err) {
@@ -397,10 +417,12 @@ function copyMain(
     // template vanilla
     filename === 'main.js'
     // template react and others
-    || filename === "main.jsx"
+    || filename === 'main.jsx'
+    || filename === 'App.jsx'
+    || filename === 'App.tsx'
   ) {
     const srcMain = readFileSync(src, 'utf8')
-    const srcMainReplaced = srcMain.replace("./app.gleam", `./${gleamName}.gleam`)
+    const srcMainReplaced = srcMain.replaceAll("./app.gleam", `./${gleamName}.gleam`)
 
     writeFileSync(dest, srcMainReplaced)
     return true
