@@ -11,9 +11,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
         with:
-          version: 'latest'
+          bun-version: 'latest'
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: 'latest'
+          gleam-version: 'latest'
       - run: bun install
-      - run: bun run build 
+      - run: bun run build
+      - run: bun run test

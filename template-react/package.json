@@ -1,10 +1,15 @@
 {
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^6.1.1",
     "vite-plugin-gleam": "^0.1.9"
   }
 }
