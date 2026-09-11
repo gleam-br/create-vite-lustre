@@ -3,11 +3,20 @@ import { existsSync, mkdirSync, rmSync, readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import { execa } from "execa"
 
-describe("scaffold e2e", () => {
-  const rootDir = resolve(__dirname, "..")
-  const scratchDir = resolve(rootDir, "scratch-test")
+const rootDir = resolve(__dirname, "..")
+const scratchDir = resolve(rootDir, "scratch-test")
 
-  beforeAll(() => {
+const hasGleam = await execa("gleam", ["--version"])
+  .then(() => true)
+  .catch(() => false)
+
+describe("scaffold e2e", () => {
+  beforeAll(async () => {
+    // Ensure dist/index.js is built before running e2e tests
+    if (!existsSync(resolve(rootDir, "dist/index.js"))) {
+      await execa("bun", ["run", "build"], { cwd: rootDir })
+    }
+
     if (existsSync(scratchDir)) {
       rmSync(scratchDir, { recursive: true, force: true })
     }
@@ -20,7 +29,7 @@ describe("scaffold e2e", () => {
     }
   })
 
-  it(
+  it.skipIf(!hasGleam)(
     "generates a vanilla template project with proper structure and builds gleam",
     async () => {
       const targetName = "test-vanilla-app"
@@ -65,7 +74,7 @@ describe("scaffold e2e", () => {
     180000
   )
 
-  it(
+  it.skipIf(!hasGleam)(
     "generates a react template project with App.jsx, no orphaned main.js, and valid configuration",
     async () => {
       const targetName = "test-react-app"

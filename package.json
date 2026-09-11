@@ -11,6 +11,7 @@
     "build": "bun run type-check && bunup",
     "compile": "bunup",
     "type-check": "tsc --noEmit",
+    "pretest": "bun run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "bun run build"
