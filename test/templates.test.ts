@@ -14,7 +14,7 @@ describe("templates integrity", () => {
 
   it("template/package.json uses vite-plugin-gleam ^0.1.9", () => {
     const pkg = JSON.parse(readFileSync(resolve(rootDir, "template/package.json"), "utf8"))
-    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.1.9")
+    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.0")
   })
 
   it("template-react/package.json uses vite-plugin-gleam ^0.1.9 and react", () => {
@@ -22,7 +22,7 @@ describe("templates integrity", () => {
     expect(existsSync(pkgPath)).toBe(true)
 
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8"))
-    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.1.9")
+    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.0")
     expect(pkg.dependencies["react"]).toBeDefined()
     expect(pkg.dependencies["react-dom"]).toBeDefined()
     expect(pkg.devDependencies["@vitejs/plugin-react"]).toBeDefined()
