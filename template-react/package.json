@@ -10,6 +10,6 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "vite-plugin-gleam": "^0.1.9"
+    "vite-plugin-gleam": "^0.2.0"
   }
 }
