@@ -9,7 +9,7 @@ describe("templates integrity", () => {
     const rootPkg = JSON.parse(readFileSync(resolve(rootDir, "package.json"), "utf8"))
     expect(rootPkg.files).toContain("template")
     expect(rootPkg.files).toContain("template-react")
-    expect(rootPkg.version).toBe("0.2.3")
+    expect(rootPkg.version).toBe("0.2.2")
   })
 
   it("template/package.json uses vite-plugin-gleam ^0.2.3", () => {
