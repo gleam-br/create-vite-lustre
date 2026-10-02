@@ -9,20 +9,20 @@ describe("templates integrity", () => {
     const rootPkg = JSON.parse(readFileSync(resolve(rootDir, "package.json"), "utf8"))
     expect(rootPkg.files).toContain("template")
     expect(rootPkg.files).toContain("template-react")
-    expect(rootPkg.version).toBe("0.2.1")
+    expect(rootPkg.version).toBe("0.2.2")
   })
 
-  it("template/package.json uses vite-plugin-gleam ^0.2.1", () => {
+  it("template/package.json uses vite-plugin-gleam ^0.2.3", () => {
     const pkg = JSON.parse(readFileSync(resolve(rootDir, "template/package.json"), "utf8"))
-    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.1")
+    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.3")
   })
 
-  it("template-react/package.json uses vite-plugin-gleam ^0.2.1 and react", () => {
+  it("template-react/package.json uses vite-plugin-gleam ^0.2.3 and react", () => {
     const pkgPath = resolve(rootDir, "template-react/package.json")
     expect(existsSync(pkgPath)).toBe(true)
 
     const pkg = JSON.parse(readFileSync(pkgPath, "utf8"))
-    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.1")
+    expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.3")
     expect(pkg.dependencies["react"]).toBeDefined()
     expect(pkg.dependencies["react-dom"]).toBeDefined()
     expect(pkg.devDependencies["@vitejs/plugin-react"]).toBeDefined()

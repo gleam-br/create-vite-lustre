@@ -68,7 +68,7 @@ describe("scaffold e2e", () => {
       expect(mainJs).toContain("./test_vanilla_app.gleam")
 
       const pkg = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8"))
-      expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.1")
+      expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.3")
       expect(pkg.dependencies["tailwindcss"]).toBeDefined()
     },
     180000
@@ -123,7 +123,7 @@ describe("scaffold e2e", () => {
       const pkg = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8"))
       expect(pkg.dependencies["react"]).toBeDefined()
       expect(pkg.dependencies["react-dom"]).toBeDefined()
-      expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.1")
+      expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.3")
     },
     180000
   )
