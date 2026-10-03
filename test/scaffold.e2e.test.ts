@@ -45,6 +45,7 @@ describe("scaffold e2e", () => {
           "vanilla",
           "--log-level",
           "debug",
+          "--skip-install"
         ],
         {
           cwd: scratchDir,
@@ -90,6 +91,7 @@ describe("scaffold e2e", () => {
           "react",
           "--log-level",
           "debug",
+          "--skip-install"
         ],
         {
           cwd: scratchDir,
@@ -124,6 +126,49 @@ describe("scaffold e2e", () => {
       expect(pkg.dependencies["react"]).toBeDefined()
       expect(pkg.dependencies["react-dom"]).toBeDefined()
       expect(pkg.devDependencies["vite-plugin-gleam"]).toBe("^0.2.3")
+    },
+    180000
+  )
+
+  it.skipIf(!hasGleam)(
+    "generates an admin template project with correct renames and protection removal",
+    async () => {
+      const targetName = "test-admin-app"
+      const targetDir = resolve(scratchDir, targetName)
+
+      // Run create-vite-lustre with bun for admin template
+      await execa(
+        "node",
+        [
+          resolve(rootDir, "index.js"),
+          targetName,
+          "--template",
+          "admin",
+          "--log-level",
+          "debug",
+          "--skip-install",
+          "--skip-build"
+        ],
+        {
+          cwd: scratchDir,
+          timeout: 120000,
+        }
+      )
+
+      expect(existsSync(targetDir)).toBe(true)
+      expect(existsSync(resolve(targetDir, "gleam.toml"))).toBe(true)
+      expect(existsSync(resolve(targetDir, "package.json"))).toBe(true)
+      expect(existsSync(resolve(targetDir, "src/test_admin_app.gleam"))).toBe(true)
+      
+      // Verify protected suffix was removed
+      expect(existsSync(resolve(targetDir, "gleam.toml_"))).toBe(false)
+      expect(existsSync(resolve(targetDir, "package.json_"))).toBe(false)
+
+      const gleamToml = readFileSync(resolve(targetDir, "gleam.toml"), "utf8")
+      expect(gleamToml).toContain('name = "test_admin_app"')
+
+      const pkg = JSON.parse(readFileSync(resolve(targetDir, "package.json"), "utf8"))
+      expect(pkg.name).toBe("test_admin_app")
     },
     180000
   )

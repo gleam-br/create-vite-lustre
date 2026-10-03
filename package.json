@@ -1,6 +1,6 @@
 {
   "name": "create-vite-lustre",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "Apache-2.0",
   "description": "Create new vitejs + lustre + gleam",
   "type": "module",
@@ -33,6 +33,7 @@
     "dist",
     "template",
     "template-react",
+    "template-admin",
     "LICENSE",
     "README.md"
   ],

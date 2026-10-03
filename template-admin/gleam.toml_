@@ -1,0 +1,18 @@
+name = "{{project_name}}"
+version = "1.0.0"
+target = "javascript"
+
+[dependencies]
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
+gleam_json = ">= 3.1.0 and < 4.0.0"
+gleam_http = ">= 4.3.0 and < 5.0.0"
+lustre = ">= 5.7.0 and < 6.0.0"
+
+# GBR UI & Admin dependencies
+gbr_ui = { path = "../../../libs/gbr_ui/core" }
+gbr_ui_admin = { path = "../../../libs/gbr_ui_admin/core" }
+gbr_ui_admin_js = { path = "../../../libs/gbr_ui_admin/js" }
+gbr_ui_admin_api = { path = "../../../libs/gbr_ui_admin/api" }
+
+[dev_dependencies]
+gleeunit = ">= 1.11.0 and < 2.0.0"
