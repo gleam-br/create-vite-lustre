@@ -41,11 +41,9 @@ const DEFAULT_TARGET_DIR = `${name}-project`
 
 /** See create-vite templates */
 const TEMPLATES = [
-  // only vanilla and
   "vanilla",
-  // react templates for now
-  "react"
-  // TODO: more support vite-create templates
+  "react",
+  "admin"
 ]
 
 /**
@@ -57,6 +55,8 @@ interface Options {
   rolldown: boolean, // experimental rolldown
   overwrite: boolean // overwrite if already exist files
   immediate: boolean,  // on finish run dev mode
+  "skip-install": boolean, // do not run npm install
+  "skip-build": boolean, // do not run gleam build
   bin: {
     pm: string, // bun, npm, pnpm, yarn, etc
     gleam: string, // where is gleam binary
@@ -82,6 +82,8 @@ const newArgv = {
     "immediate",
     "rolldown",
     "log-time",
+    "skip-install",
+    "skip-build",
   ],
   string: [
     "template",
@@ -263,27 +265,35 @@ async function main(): Promise<void> {
       }
     }
 
-    // gleam build
-    const gleamBuildArgs = [
-      "build",
-      "--target",
-      "javascript",
-      "--no-print-progress"
-    ]
-    await runBin(log, dest, gleam, gleamBuildArgs)
+    const skipBuild = OPTS["skip-build"] || false
 
-    // pm install
-    const pmInstallArgs = [
-      "install",
-    ]
-    await runBin(log, dest, pm, pmInstallArgs)
+    if (!skipBuild) {
+      // gleam build
+      const gleamBuildArgs = [
+        "build",
+        "--target",
+        "javascript",
+        "--no-print-progress"
+      ]
+      await runBin(log, dest, gleam, gleamBuildArgs)
+    }
 
-    // pm run build
-    const pmRunBuildArgs = [
-      "run",
-      "build",
-    ]
-    await runBin(log, dest, pm, pmRunBuildArgs)
+    const skipInstall = OPTS["skip-install"] || false
+
+    if (!skipInstall) {
+      // pm install
+      const pmInstallArgs = [
+        "install",
+      ]
+      await runBin(log, dest, pm, pmInstallArgs)
+
+      // pm run build
+      const pmRunBuildArgs = [
+        "run",
+        "build",
+      ]
+      await runBin(log, dest, pm, pmRunBuildArgs)
+    }
 
     if (immediate) {
       log('Starting dev server...')
@@ -343,7 +353,11 @@ async function copyFiles(log: any, name: string, src: string, dest: string): Pro
     return
   }
 
-  const filename = basename(src)
+  let filename = basename(src)
+  if (filename.includes("{{project_name}}")) {
+    filename = filename.replace("{{project_name}}", name)
+    dest = resolve(dirname(dest), filename)
+  }
   log(`:> copy ${filename}`)
   const copiedPackageJson = await copyPackageJson(filename, src, dest)
 
@@ -375,8 +389,31 @@ async function copyFiles(log: any, name: string, src: string, dest: string): Pro
     return
   }
 
-  copyFileSync(src, dest)
+  const copiedProtected = copyProtected(filename, name, src, dest)
+
+  if (copiedProtected) {
+    log(`:> OK !`)
+    return
+  }
+
+  copyWithVariables(name, src, dest)
   log(`:> OK !`)
+}
+
+function copyWithVariables(gleamName: string, src: string, dest: string) {
+  // Read file as string. If it's binary (e.g. image), this might corrupt it, so we only replace in text files.
+  // Actually, we can check if it's an image.
+  if (src.endsWith('.svg') || src.endsWith('.ico') || src.endsWith('.png')) {
+    copyFileSync(src, dest)
+    return
+  }
+
+  const srcContent = readFileSync(src, 'utf8')
+  const replaced = srcContent
+    .replaceAll("{{project_name}}", gleamName)
+    .replaceAll("{{theme}}", "default")
+
+  writeFileSync(dest, replaced)
 }
 
 /**
@@ -425,6 +462,30 @@ function copyMain(
     const srcMainReplaced = srcMain.replaceAll("./app.gleam", `./${gleamName}.gleam`)
 
     writeFileSync(dest, srcMainReplaced)
+    return true
+  }
+
+  return false
+}
+
+/**
+ * Handle protected files with variables.
+ * rename `.ext_` to `.ext` and replace `{{project_name}}` and `{{theme}}`
+ */
+function copyProtected(
+  filename: string,
+  gleamName: string,
+  src: string,
+  dest: string,
+): boolean {
+  if (filename.endsWith('_') && (filename.endsWith('.toml_') || filename.endsWith('.json_') || filename.endsWith('.js_') || filename.endsWith('.gleam_'))) {
+    const srcContent = readFileSync(src, 'utf8')
+    const replaced = srcContent
+      .replaceAll("{{project_name}}", gleamName)
+      .replaceAll("{{theme}}", "default") // TODO: get from options
+
+    const newDest = resolve(dirname(dest), filename.slice(0, -1))
+    writeFileSync(newDest, replaced)
     return true
   }
 
@@ -552,12 +613,21 @@ function newOpt(options: any | undefined): Options {
     ? options["log-time"]
     : false
 
+  const skipInstall = typeof options["skip-install"] === "boolean"
+    ? options["skip-install"]
+    : false
+  const skipBuild = typeof options["skip-build"] === "boolean"
+    ? options["skip-build"]
+    : false
+
   return {
     template,
     help,
     rolldown,
     overwrite,
     immediate,
+    "skip-install": skipInstall,
+    "skip-build": skipBuild,
     bin: {
       pm,
       gleam,
